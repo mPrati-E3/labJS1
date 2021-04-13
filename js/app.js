@@ -1,113 +1,5 @@
 'use strict';
 
-// --- Definining Task & Task List --- //
-
-function Task(id, description, isImportant = false, isPrivate = true, deadline = '') {
-    this.id = id;
-    this.description = description;
-    this.important = isImportant;
-    this.private = isPrivate;
-    // deadline is saved as day.js object
-    this.deadline = deadline && dayjs(deadline);
-
-    // Getters
-    this.isImportant = () => { return this.important; }
-    this.isPrivate   = () => { return this.private;   }
-
-    /** 
-     * Function to check if a date is today. Returns true if the date is today, false otherwise.
-     * @param {*} date the javascript Date to be checked
-     */
-    this.isToday =  () => {
-        const comparisonTemplate = 'YYYY-MM-DD';
-        const now = dayjs();
-        return this.deadline && (this.deadline.format(comparisonTemplate) === now.format(comparisonTemplate));
-    }
-
-    /** 
-     * Function to check if a date is yesterday. Returns true if the date is yesterday, false otherwise.
-     * @param {*} date the javascript Date to be checked
-     */
-     this.isYesterday = () => {
-        const comparisonTemplate = 'YYYY-MM-DD';
-        const yesterday = dayjs().subtract(1, 'day');
-        return this.deadline && (this.deadline.format(comparisonTemplate) === yesterday.format(comparisonTemplate));
-    }
-
-    /** 
-     * Function to check if a date is tomorrow. Returns true if the date is tomorrow, false otherwise.
-     * @param {*} date the javascript Date to be checked
-     */
-    this.isTomorrow = () => {
-        const comparisonTemplate = 'YYYY-MM-DD';
-        const tomorrow = dayjs().add(1, 'day');
-        return this.deadline && (this.deadline.format(comparisonTemplate) === tomorrow.format(comparisonTemplate));
-    }
-
-    /**
-     * Function to check if a date is in the next week. Returns true if the date is in the next week, false otherwise.
-     * @param {*} date the javascript Date to be checked
-     */
-     this.isNextWeek = () => {
-         const tomorrow = dayjs().add(1, 'day');
-         const nextWeek = dayjs().add(7, 'day');
-         const ret = this.deadline && ( !this.deadline.isBefore(tomorrow,'day') && !this.deadline.isAfter(nextWeek,'day') );
-         console.dir(this.deadline);
-         console.log(ret);
-         return ret;
-     }
-
-     /**
-     * Function to setup the output format of the deadline attribute in the task
-     */
-     this.formatDeadline = () => {
-        if(!this.deadline) return '--o--';
-        else if(this.isToday(this.deadline)) {
-            return this.deadline.format('[Today at] HH:mm');
-        } else if(this.isTomorrow(this.deadline)) {
-            return this.deadline.format('[Tomorrow at] HH:mm');
-        } else if(this.isYesterday(this.deadline)) {
-            return this.deadline.format('[Yesterday at] HH:mm');
-        } else {
-            return this.deadline.format('dddd DD MMMM YYYY [at] HH:mm');
-        }
-    }
-}
-
-function TaskList() {
-    this.list = [];
-
-    this.add = (task) => {
-        if (!this.list.some(t => t.id == task.id))
-            this.list = [...this.list, task];
-        else throw new Error('Duplicate id');
-    };
-
-
-    this.filterAll = () => {
-        // With this approach we return a copy of the list, not the list itself.
-        return this.list.filter( () => true);
-    }
-
-    this.filterByImportant = () => {
-        return this.list.filter((task) => task.isImportant());
-    }
-
-    this.filterByToday = () => {
-        return this.list.filter( (task) => task.isToday() );
-    }
-
-    this.filterByNextWeek = () => {
-        return this.list.filter( (task) => task.isNextWeek() );
-    }
-
-    this.filterByPrivate = () => {
-        return this.list.filter( (task) => task.isPrivate() );
-    }
-
-}
-
-
 // --- Functions Definitions --- //
 
 /**
@@ -170,16 +62,42 @@ function createListTasks(tasks) {
     const listTasks = document.getElementById("list-tasks");
     for (const task of tasks) {
         const taskNode = createTaskNode(task);
-        listTasks.appendChild(taskNode);
+        listTasks.prepend(taskNode);
     }
 }
 
 /**
  * Function to destroy the <ul></ul> list of tasks, this will just clean my table
+ * and add the insert bar
  */
 function clearListTasks() {
     const listTasks = document.getElementById("list-tasks");
-    listTasks.innerHTML = '';
+    listTasks.innerHTML = `
+        <br>
+        <div class="d-flex w-100 justify-content-between">
+
+            <label for="fid">ID:</label>
+            <input type="text" id="inputId" name="fid">
+
+            <label for="fnome">Nome:</label>
+            <input type="text" id="inputName" name="fnome">
+
+            <div class="custom-control custom-checkbox">
+
+                <label>Important:</label>
+                <input type="checkbox" id="inputImp">
+
+                <label>Private:</label>
+                <input type="checkbox" id="inputPri">
+
+            </div>
+
+            <label for="fdata">Data:</label>
+            <input type="date" id="inputDate" name="fdata">
+
+        </div>
+    
+    `;
 }
 
 /**
@@ -197,37 +115,31 @@ function filterTasks( filterId, titleText, filterFn ) {
     createListTasks(filterFn());
 }
 
+/**
+ * Function to manage task adding in the web page
+ * @param {string}      id  The new task id.
+ * @param {string}      nome The name of the new task.
+ * @param {boolean}     imp Is this new task important?
+ * @param {boolean}     pri Is this new task private?
+ * @param {data}        data The date of the new task.
+ * @param {listTasks}   listaPassata My task list that will be modified.
+ */
+function addNewTaskToVIew(id, nome, imp, pri, data, listaPassata){
+
+    console.log(id);
+    console.log(nome);
+    console.log(imp);
+    console.log(pri);
+    console.log(data);
+
+    const taskNuovo = new Task(id,nome,imp,pri,data);
+
+    listaPassata.add(taskNuovo);
+
+    return listaPassata;
+
+}
 
 
-// ----- Main ----- //
-
-const taskList = new TaskList();
-
-// Spread operator (...) cannot be applied to objects.
-TASKS.forEach(t => { taskList.add(new Task(...t)); });
-createListTasks(taskList.filterAll());
-// ---------------- //
 
 
-// --- Creating Event Listeners for filters --- //
-document.getElementById("filter-all").addEventListener( 'click', event => 
-    filterTasks( 'filter-all', 'All', taskList.filterAll )
-);
-
-document.getElementById("filter-important").addEventListener( 'click', event => 
-    filterTasks( 'filter-important', 'Important', taskList.filterByImportant )
-);
-
-document.getElementById("filter-today").addEventListener( 'click', event => 
-    filterTasks( 'filter-today', 'Today', taskList.filterByToday )
-);
-
-document.getElementById("filter-week").addEventListener( 'click', event => 
-    filterTasks( 'filter-week', 'Next 7 Days', taskList.filterByNextWeek )
-);
-
-document.getElementById("filter-private").addEventListener( 'click', event => 
-    filterTasks( 'filter-private', 'Private', taskList.filterByPrivate )
-);
-
-//I do not need to launch any main function because Event Listeners will be launched by the events

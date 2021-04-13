@@ -33,6 +33,7 @@
   <!-- Custom JavaScript -->
   <script defer src="js/tasks.js"></script>
   <script defer src="js/app.js"></script>
+  <script defer src="js/main.js"></script>
 
 </head>
 
@@ -105,10 +106,38 @@
 
         <!-- List of tasks -->
         <ul class="list-group list-group-flush" id="list-tasks">
+
+          <br>
+          <div class="d-flex w-100 justify-content-between">
+
+            <label for="fid">ID:</label>
+            <input type="text" id="inputId" name="fid">
+  
+            <label for="fnome">Nome:</label>
+            <input type="text" id="inputName" name="fnome">
+  
+            <div class="custom-control custom-checkbox">
+
+              <label>Important:</label>
+              <input type="checkbox" id="inputImp">
+  
+              <label>Private:</label>
+              <input type="checkbox" id="inputPri">
+
+            </div>
+  
+            <label for="fdata">Data:</label>
+            <input type="date" id="inputDate" name="fdata">
+  
+          </div>
+
         </ul>
 
         <!-- Add a new task... -->
-        <button type="button" class="btn btn-lg btn-success fixed-right-bottom">&#43;</button>
+        
+
+
+        <button type="button" id="addNewTaskButton" class="btn btn-lg btn-success fixed-right-bottom">&#43;</button>
 
       </main>
     </div>
